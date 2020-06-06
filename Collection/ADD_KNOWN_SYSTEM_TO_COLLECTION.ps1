@@ -6,7 +6,7 @@
 # 	Purpose         :   Get the list of collection with NO deployment. 
 # 	Author          :	Shishir Kushawaha
 #	Mail Id         :   srktcet@gmail.com
-#   Created         :   07/10/2019 - Script creation.
+#   	Created         :   07/10/2019 - Script creation.
 # 	Modified        :	15-10-2019
 #						Added comments
 #						Some bug correction
