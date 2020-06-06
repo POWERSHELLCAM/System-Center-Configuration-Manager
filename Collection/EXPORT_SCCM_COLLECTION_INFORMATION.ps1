@@ -6,7 +6,7 @@
 # 	Purpose         :   Get the COLLECTION INFORMATION from list of collection ID.
 # 	Author          :	Shishir Kushawaha
 #	Mail Id         :   srktcet@gmail.com
-#   Created         :   06/06/2020 - Script creation.
+#   	Created         :   06/06/2020 - Script creation.
 # 	Modified        :	
 # ######################################################################
 
