@@ -5,13 +5,13 @@
 # 	Version         :   1.1
 # 	Purpose         :   Get task sequence information
 # 	Author          :	Shishir Kushawaha
-#   Technet Link    :   https://gallery.technet.microsoft.com/site/search?f%5B0%5D.Type=User&f%5B0%5D.Value=SHISHIR%20KUSHAWAHA&pageIndex=3 
-#	Mail Id         :   srktcet@gmail.com
+#   Mail Id         :   srktcet@gmail.com
 #   Created         :   05-10-2018 - Script creation.
-# 	Modified        :	23-10-2019
+# 	Modified        :	26-09-2021
 #						Added comments
 #						Some bug correction
 #						Suppot for Task sequence group
+#                       Added information for Driver Packages
 # ######################################################################
 
 <# Objective:
@@ -140,7 +140,11 @@ do
 		}
 
 		#BootImage Information
-		$bootImagePackageID=$taskSequenceResult.bootimageid
+		try
+		{
+			$bootImagePackageID=$taskSequenceResult.bootimageid
+		}
+		catch{}
 		if(($null -ne $bootImagePackageID) -or ($bootImagePackageID -ne ' '))
 		{
 			$bootImageResult=Get-CMBootImage -id $bootImagePackageID
@@ -155,7 +159,7 @@ do
 					$bootImageReferenceDriverResult=New-Object System.Collections.ArrayList
 					foreach($id in $bootImageReferenceDriversCIID)
 						{
-							$driverResult=Get-CMDriver -id $id |Select-Object LocalizedDisplayName,DriverVersion,CI_ID
+							$driverResult=Get-CMDriver -id $id -fast|Select-Object LocalizedDisplayName,DriverVersion,CI_ID
 							[void]$bootImageReferenceDriverResult.add($driverResult)
 						}
 					if($null -ne $bootImageReferenceDriverResult)
@@ -194,18 +198,42 @@ do
 		$taskSequencePackages=$taskSequenceResult.references.package
 		$taskSequencePackageResult=New-Object System.Collections.ArrayList
 		$taskSequenceApplicationResult=New-Object System.Collections.ArrayList
+		$taskSequenceDriverPackageResult=New-Object System.Collections.ArrayList
 		foreach($tPid in $taskSequencePackages)
 			{
-				$packageResult=Get-CMPackage -id  $tPid -fast | Select-Object Name , PackageID
-				$ApplicationResult=Get-CMApplication -modelname  $tPid | Select-Object LocalizedDisplayName , PackageID,CI_ID
+				$app_info=$ApplicationResult=$null
+				$packageResult=Get-CMPackage -id  $tPid -fast | Select-Object Name , PackageID,@{'Name'='Package Type';Expression= {'Software Package'}},Version,PkgSourcePath
+				$driverPackageResult=Get-CMDriverPackage -id  $tPid -fast | Select-Object Name , PackageID,@{'Name'='Package Type';Expression= {'Driver Package'}},Version,PkgSourcePath
+				
+				$ApplicationResult=Get-CMApplication -modelname  $tPid | Select-Object LocalizedDisplayName,PackageID,@{'Name'='Package Type';Expression= {'Software Application'}},SoftwareVersion
+				$app_SDM=Get-CMApplication -modelname  $tPid | Select-Object SDMPackageXML
+				$AppMgmt = ([xml]$app_SDM.SDMPackageXML).AppMgmtDigest				
+				$applocation=$AppMgmt.DeploymentType.Installer.Contents.Content.Location
+				if($null -ne $ApplicationResult)
+				{
+					$app_info=[pscustomobject]@{
+					'Name'=$($ApplicationResult.LocalizedDisplayName)
+					'Package ID'=$($ApplicationResult.PackageID)
+					'Package Type'='Software Applications'
+					'Version'=$($ApplicationResult.SoftwareVersion)
+					'Data Source Path'=$applocation
+					}
+					[void]$taskSequenceApplicationResult.add($app_info)
+				}
 				[void]$taskSequencePackageResult.add($packageResult)
-				[void]$taskSequenceApplicationResult.add($applicationResult)
+				[void]$taskSequenceDriverPackageResult.add($driverPackageResult)
 			}
 
 		#Software Packages Information
 		if($null -ne $taskSequencePackageResult)
 		{
 			$taskSequencePackageResult | ConvertTo-html  -Head $test -Body "<h2>Integrated Packages </h2>" >> "$strPath"
+		}
+		
+		#Driver Packages Information
+		if($null -ne $taskSequenceDriverPackageResult)
+		{
+			$taskSequenceDriverPackageResult | ConvertTo-html  -Head $test -Body "<h2> Driver Packages </h2>" >> "$strPath"
 		}
 
 		#Application Information
