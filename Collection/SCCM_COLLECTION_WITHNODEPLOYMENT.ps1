@@ -165,6 +165,9 @@ $COLLECTION_RESULT | ConvertTo-html  -Head $test -Body "<h2>SCCM COLLECTIONS HAV
 write-host "`n Opening $strpath report. `n" -foregroundcolor $inputcolor -nonewline 
 Invoke-Item $strPath
 
+#Get-WmiObject -Namespace $name_space -Query "select CollectionID,Name,ObjectPath,LimitToCollectionID,LimitToCollectionName,MemberCount from SMS_Collection Where SMS_Collection.collectiontype = 2  and smsm_collection.collectionid not like 'sms*'" -computername $server_name -Credential $CREDENTIAL
+#(Get-WmiObject -Namespace $name_space -Query "select collectionid from SMS_DeploymentSummary" -computername $server_name -Credential $CREDENTIAL).collectionid
+
 		
 
 
