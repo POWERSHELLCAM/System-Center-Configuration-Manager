@@ -118,7 +118,7 @@ foreach($tPid in $taskSequencePackages)
         $packageSum=$packageSum+($packageResult.packagesize) 
         $pkgref=Get-CMApplication -modelname  $tPid | Select-Object LocalizedDisplayName , PackageID,PackageSize 
         $apppkgid=$pkgref.packageid 
-        $ApplicationResult=Get-WmiObject -ComputerName mgosccmpp1 -namespace root\sms\site_gmi -Query "SELECT * from sms_contentpackage where packageid = '$apppkgid'" | Select-Object Name,PackageID,PackageSize 
+        $ApplicationResult=Get-WmiObject -ComputerName $ProviderMachineName -namespace root\sms\site_$SiteCode -Query "SELECT * from sms_contentpackage where packageid = '$apppkgid'" | Select-Object Name,PackageID,PackageSize 
         $applicationSum=$applicationSum+($ApplicationResult.packagesize) 
         $OSResult=Get-cmoperatingsystemimage -id $tPid | Select-Object Name,PackageID,PackageSize 
         $osSum=$osSum+($OSResult.packagesize) 
