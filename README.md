@@ -11,4 +11,14 @@ This project covers some automation which can be acheived using PowerShell for S
   - [Collections](https://github.com/POWERSHELLCAM/System-Center-Configuration-Manager/tree/master/Collection)
   - [Task Sequence](https://github.com/POWERSHELLCAM/System-Center-Configuration-Manager/tree/master/Task%20Sequence)
   - [Driver Packages](https://github.com/POWERSHELLCAM/System-Center-Configuration-Manager/tree/master/DriverPackages)
-  - [Advertiswment and deployments](https://github.com/POWERSHELLCAM/System-Center-Configuration-Manager/tree/master/Advertisement%20and%20Deployment)
+  - [Advertisement and deployments](https://github.com/POWERSHELLCAM/System-Center-Configuration-Manager/tree/master/Advertisement%20and%20Deployment)
+ 
+# Application and Packages
+ 
+# Collections
+
+# Task Sequence
+
+# Driver Packages
+
+# Advertisement and deployments
