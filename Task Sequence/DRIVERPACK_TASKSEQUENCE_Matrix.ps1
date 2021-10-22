@@ -105,8 +105,9 @@ write-host "Driver Package and task sequence information gathered."
 #region package association with task sequnece
 foreach($ts in $tsList)
 {
-    $tempTSResults=$null
+    $tempTSResults=$tempTSStagedPackages=$null
     $tempTSResults=Get-CMTaskSequenceStepApplyDriverPackage -TaskSequenceId $($ts.packageid) | select driverpackageid,enabled
+	$tempTSStagedPackages=Get-CMTaskSequenceStepDownloadPackageContent -TaskSequenceId $($ts.packageid) | select downloadpackages
     if($null -ne $tempTSResults)
     {
         foreach($tempTSResult in $tempTSResults)
@@ -119,6 +120,23 @@ foreach($ts in $tsList)
             }
             $driverPackTsAssociationResult+=$tempRecord
             $tempRecord=$null
+        }
+    }
+	if($null -ne $tempTSStagedPackages)
+    {
+        foreach($tempTSStagedPackage in $($tempTSStagedPackages.downloadpackages))
+        {
+			if($tempTSStagedPackage -in $($driverPackageList.packageid))
+			{
+				$tempRecord=[pscustomobject]@{
+				'Task Sequence Name'=$ts.name
+				'Task Sequence Package ID'=$($ts.packageid)
+				'Driver Package ID'=$tempTSStagedPackage
+				'Enabled'="True"
+				}
+				$driverPackTsAssociationResult+=$tempRecord
+				$tempRecord=$null
+			}
         }
     }
 }
