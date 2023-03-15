@@ -31,12 +31,12 @@ Start-Sleep 2
 $initParams = @{} 
  
 # Import the ConfigurationManager.psd1 module  
-if((Get-Module ConfigurationManager) -eq $null) { 
+if($null -eq (Get-Module ConfigurationManager)) { 
     Import-Module "$($ENV:SMS_ADMIN_UI_PATH)\..\ConfigurationManager.psd1" @initParams  
 } 
  
 # Connect to the site's drive if it is not already present 
-if((Get-PSDrive -Name $SiteCode -PSProvider CMSite -ErrorAction SilentlyContinue) -eq $null) { 
+if($null -eq (Get-PSDrive -Name $SiteCode -PSProvider CMSite -ErrorAction SilentlyContinue)) { 
     New-PSDrive -Name $SiteCode -PSProvider CMSite -Root $ProviderMachineName @initParams 
 } 
  
@@ -47,8 +47,8 @@ Set-Location "$($SiteCode):\" @initParams
 function deinitializeSCCM 
 { 
 	$ProcessMessage="`n Please wait.De-Initializing SCCM ......" 
-	iex $ProcessColor 
-	sleep 2 
+	Invoke-Expression $ProcessColor 
+	Start-Sleep 2 
 	set-location $location 
 } 
 function updateHTML
@@ -77,7 +77,7 @@ tr:nth-child(odd) { background: #b8d1f3; }
 '@
 
 #--Variable declaration
- clear
+ Clear-Host
  $location=get-location 
  $InputColor="yellow" 
  $ProcessColor="write-host `$ProcessMessage -ForegroundColor gray -BackgroundColor darkgreen" 
@@ -90,30 +90,41 @@ tr:nth-child(odd) { background: #b8d1f3; }
 ConvertTo-Html -Head $test -Title $ReportTitle -Body "<h1> DRIVER WITH NO DATA SOURCE </h1>" >  "$strPath"
 InitializeSCCM 
 write-host "Getting Driver Information" -foregroundcolor $inputcolor
-$driverInfo=Get-CMDriver -fast | SELECT CI_ID,LocalizedDisplayName,CONTENTSOURCEPATH
+$driverInfo=Get-CMDriver -fast | Select-Object CI_ID,LocalizedDisplayName,CONTENTSOURCEPATH
 #De-initializing SCCM 
 deinitializeSCCM 
 write-host "Processing data to get drivers with no data source" -foregroundcolor $inputcolor
 $result = @()
 $i=0
 foreach($c in $driverInfo)
-	{
-        $r=$true
-		$r=Test-Path -LiteralPath $($c.CONTENTSOURCEPATH)
-		if(!$r)
-			{
-				$property=$null
-				$property=$c |Select-Object ci_id,LocalizedDisplayName,CONTENTSOURCEPATH
-				$newProperty = [ordered]@{}
-						$newProperty."SrNo" = $i+1
-						$newProperty."CI_ID" = $property.ci_id
-						$newProperty."Name" = $property.LocalizedDisplayName
-						$newProperty."SourcePath" = $property.CONTENTSOURCEPATH
-						$Objectname = New-Object PSobject -Property $newProperty
-						$result += $Objectname
-						$i++
-			}
-	}
+{
+    $r=$true
+    $e=$null
+    $($c.CONTENTSOURCEPATH)
+    $r=Test-Path -LiteralPath "$($c.CONTENTSOURCEPATH)" -ErrorVariable e
+    if($e.count -eq 0)
+    {
+        $m="Path does not exist"
+    }
+    else
+    {
+        $m=$($e -split '`n')
+    }
+    if($r -eq $false)
+    {
+        $property=$null
+        $property=$c |Select-Object ci_id,LocalizedDisplayName,CONTENTSOURCEPATH
+        $newProperty = [ordered]@{}
+        $newProperty."SrNo" = $i+1
+        $newProperty."CI_ID" = $property.ci_id
+        $newProperty."Name" = $property.LocalizedDisplayName
+        $newProperty."SourcePath" = $property.CONTENTSOURCEPATH
+        $newProperty."Result" = $m
+        $Objectname = New-Object PSobject -Property $newProperty
+        $result += $Objectname
+        $i++
+    }
+}
 $count=$driverInfo.count
 ConvertTo-Html -Head $test -Title $ReportTitle -Body "<h2> Total drivers in entire site : $count </h2>" >  "$strPath"
 ConvertTo-Html -Head $test -Title $ReportTitle -Body "<h2> Total drivers having no data source in entire site : $i </h2>" >  "$strPath"
