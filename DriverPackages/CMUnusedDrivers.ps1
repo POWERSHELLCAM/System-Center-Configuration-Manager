@@ -84,6 +84,7 @@ $location=get-location
 $InputColor="yellow" 
 $unusedDrivers=$null
 $usedDrivers=@()
+$unusedDrivers=@()
 $ProcessColor="write-host `$ProcessMessage -ForegroundColor gray -BackgroundColor darkgreen" 
 $ReportTitle="MECM UNUSED DRIVERS"
 $strPath = "$location\$ReportTitle.html" 
@@ -109,12 +110,9 @@ write-host "Getting list of driver package drivers information" -foregroundcolor
 #list drivers from all driver packages
 foreach($pkgid in $driverpackageid)
 {
-    write-host "Checking driver package $pkgid."
+    write-host "Checking driver package $($pkgid.packageid)."
     $usedDrivers+=(Get-CMDriver -Fast -DriverPackageId $pkgid).ci_id
 }
-
-#De-initializing SCCM 
-deinitializeSCCM 
 
 write-host "Processing to get the list of unused drivers." -foregroundcolor $inputcolor
 #Add boot image drivers in driver packages drivers
@@ -124,11 +122,14 @@ $usedDrivers+=$bootimageDriversIDs
 $usedDrivers=$usedDrivers | Select-Object -Unique
 
 #Subtract used drivers from all drivers to get the list if unused drivers
-$unusedDrivers =  Compare-Object -ReferenceObject $usedDrivers -DifferenceObject $($drivers.ci_id) -PassThru
+$drivers | ForEach-Object {if($_.ci_id -notin $usedDrivers){$unusedDrivers+=$_}}
 
+# Delete drivers. Comment below line if you wish to delete later
+$unusedDrivers | ForEach-Object { "deleting $($_.ci_id), $($_.contentsourcepath)" ; remove-cmdriver -id $_.ci_id -Force}
 
-ConvertTo-Html -Head $test -Title $ReportTitle -Body "<h2> Total drivers in entire site : $($drivers.count) </h2>" >  "$strPath"
-ConvertTo-Html -Head $test -Title $ReportTitle -Body "<h2> Total unused drivers : $($unusedDrivers.count)</h2>" >  "$strPath"
+#De-initializing SCCM 
+deinitializeSCCM 
+ConvertTo-Html -Head $test -Title $ReportTitle -Body "<h2> Total drivers in entire site : $($drivers.count) <br> Total unused drivers : $($unusedDrivers.count)</h2>" >  "$strPath"
 $unusedDrivers | ConvertTo-html  -Head $test -Body "<h2>Driver Details</h2>" >> "$strPath"
 #Launching HTML generated report 
 write-host "`n Opening $strpath report. `n" -foregroundcolor $inputcolor -nonewline 
