@@ -111,7 +111,7 @@ write-host "Getting list of driver package drivers information" -foregroundcolor
 foreach($pkgid in $driverpackageid)
 {
     write-host "Checking driver package $($pkgid.packageid)."
-    $usedDrivers+=(Get-CMDriver -Fast -DriverPackageId $pkgid).ci_id
+    $usedDrivers+=(Get-CMDriver -Fast -DriverPackageId $($pkgid.packageid)).ci_id
 }
 
 write-host "Processing to get the list of unused drivers." -foregroundcolor $inputcolor
