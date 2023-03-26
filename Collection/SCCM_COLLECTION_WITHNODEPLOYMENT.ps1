@@ -139,7 +139,7 @@ write-host "Deployment list gathering completed." -foregroundcolor $inputcolor
 $TOTAL_COUNT_COLLECTION=$COLLECTION_LIST.count	
 $TOTAL_COUNT_DEPLOYMENT=$DEPLOYMENT_List.count	
 $COMPARED_RESULT=(Compare-Object $DEPLOYMENT_List $COLLECTION_LIST.collectionid |? {$_.sideindicator -eq "=>"}).inputobject
-write-host "I am looking for collections having member count less than OR equal to=" -foregroundcolor $inputcolor -nonewline
+write-host "Specify the minimum number of members a collection should have=" -foregroundcolor $inputcolor -nonewline
 $MEMBER_COUNT=read-host 
 foreach($c in $COMPARED_RESULT)
 	{
@@ -153,22 +153,14 @@ foreach($c in $COMPARED_RESULT)
 			}
 		}	
 	}
+
 deinitializeSCCM
 #Writing result to HTML page
 write-host "`n Collection information gathering completed." -foregroundcolor $inputcolor
 ConvertTo-Html -Head $test -Title $ReportTitle -Body "<h1>SCCM COLLECTIONS HAVING NO DEPLOYMENT OR ADVERTISEMENT</h1>" >  "$strPath"
-ConvertTo-Html -Head $test -Title $ReportTitle -Body "<h2> Total collections in entire site : $($TOTAL_COUNT_COLLECTION)</h2>" >  "$strPath"
-ConvertTo-Html -Head $test -Title $ReportTitle -Body "<h2> Total deployments in entire site : $($TOTAL_COUNT_DEPLOYMENT)</h2>" >  "$strPath"
-$COLLECTION_RESULT | ConvertTo-html  -Head $test -Body "<h2>SCCM COLLECTIONS HAVING NO DEPLOYMENT OR ADVERTISEMENT [Total : $($COLLECTION_COUNT)] </h2>" >> "$strPath"
+ConvertTo-Html -Head $test -Title $ReportTitle -Body "<h2> Total collections: $($TOTAL_COUNT_COLLECTION) <br> Total deployments in entire site : $($TOTAL_COUNT_DEPLOYMENT)</h2>" >  "$strPath"
+$COLLECTION_RESULT | Sort-Object -Property LastMemberChangetime | ConvertTo-html  -Head $test -Body "<h2>SCCM COLLECTIONS HAVING NO DEPLOYMENT OR ADVERTISEMENT [Total : $($COLLECTION_COUNT)] </h2>" >> "$strPath"
 
 #Launching HTML generated report 
 write-host "`n Opening $strpath report. `n" -foregroundcolor $inputcolor -nonewline 
 Invoke-Item $strPath
-
-		
-				
-		
-
-	
-  
- 
