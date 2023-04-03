@@ -55,7 +55,10 @@ function deinitializeSCCM
 	Start-Sleep 2 
 	set-location $location 
 } 
-
+Clear-Host
+$location=get-location 
+$InputColor="yellow" 
+$ProcessColor="write-host `$ProcessMessage -ForegroundColor gray -BackgroundColor darkgreen" 
 $BackupPath = ""
 if($BackupPath -ne "")
 {
@@ -85,7 +88,7 @@ if($BackupPath -ne "")
     }
     # Export the task sequences to location mentioned
     $AllTaskSequences | ForEach-Object { 
-        "Exporting Task Sequence $($_.name)-$($_.packageid)"
+        "Exporting Task Sequence $($_.packageid)-$($_.name)"
         Export-CMTaskSequence -TaskSequencePackageId $_.packageid -ExportFilePath "$BackupFolder\$($_.packageid)-$($_.name).zip" -WithContent $false -WithDependence $false
     }
     deinitializeSCCM
