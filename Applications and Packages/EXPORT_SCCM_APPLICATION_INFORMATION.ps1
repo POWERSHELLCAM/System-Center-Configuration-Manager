@@ -122,7 +122,7 @@ if(test-path  $pkg_input_list -erroraction silentlycontinue)
 				else
 				{$ReportTitle="Application $($pkg_info.PackageId)- $app_name Details"}
 				
-				$strPath = "$location\$ReportTitle.html" 
+				$strPath = "$location\reports\$ReportTitle.html" 
 				if(test-path $strpath -ea silentlycontinue){remove-item $strpath -force}
 				$app_SDM=$pkg_info | select SDMPackageXML
 				$pkg_info | select LocalizedDisplayName,PackageId,LocalizedDescription,SoftwareVersion,NumberOfDeployments,NumberOfDeploymentTypes,Manufacturer,CreatedBy,DateCreated,DateLastModified,CI_ID,CI_UniqueID,IsSuperseded,IsSuperseding | ConvertTo-html  -Head $test -Body "<h2>Application $app_name General Information</h2>" >> "$strPath"
