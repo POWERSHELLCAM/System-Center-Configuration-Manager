@@ -1,4 +1,3 @@
-
 # ######################################################################
 #
 # 	Program         :   TASK_SEQUENCE_DETAILS.ps1
@@ -26,7 +25,6 @@
 
 <# Execution:
   This script will accept the task sequence package ID information from the prompt. Once entered , It will retrieve the following information from the SCCM
-
 	OS Image
 	Boot Image
 	Drivers Integrated in boot image
@@ -39,7 +37,6 @@
 	Network Settings
 	Task Sequence group
 	Script will generate the .HTML page which will have all information in tabular format.
-
 	There is a variable which is specify the .HTML store location as $Location. It can be modified as per the requirement.
 #>
 function InitializeSCCM 
@@ -128,8 +125,14 @@ do
 		$operatingSystemPackageID=$stepOperatingSystem.ImagePackageID
 		if($null -ne $operatingSystemPackageID)
 		{
-			Get-cmoperatingsystemimage -id $operatingSystemPackageID | Select-Object Name,Description, ImageosVersion,Lastrefreshtime,PackageID, PackageSize,PkgsourcePath,SourceDate,version |  ConvertTo-html  -Head $test -Body "<h2>Operating System Image Information</h2>" >> "$strPath"
-			$stepOperatingSystem| Select-Object Name,ImagePackageID,ImageIndex,DestinationVariable,DestinationDisk,DestinationLogicalDrive,DestinationPartition,ConfigFileName,ConfigFilePackage |  ConvertTo-html  -Head $test -Body "<h2>Operating System Step Information</h2>" >> "$strPath"
+            $OSImageResult=New-Object System.Collections.ArrayList
+            foreach($osid in $operatingSystemPackageID)
+            {
+			    $osresult=Get-cmoperatingsystemimage -id $osid | Select-Object Name,Description, ImageosVersion,Lastrefreshtime,PackageID, PackageSize,PkgsourcePath,SourceDate,version
+                [void]$OSImageResult.add($osresult)
+            }
+            $OSImageResult |  ConvertTo-html  -Head $test -Body "<h2>Operating System Image Information</h2>" >> "$strPath"
+            $stepOperatingSystem| Select-Object Name,ImagePackageID,ImageIndex,DestinationVariable,DestinationDisk,DestinationLogicalDrive,DestinationPartition,ConfigFileName,ConfigFilePackage |  ConvertTo-html  -Head $test -Body "<h2>Operating System Step Information</h2>" >> "$strPath"
 		}
 
 		#Upgrade Operating System Information
